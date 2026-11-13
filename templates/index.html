@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "_macros.html" import book_card %}
+{% block title %}Beranda{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-copy">
+      <h1>Satu rak buku yang terbuka untuk siapa saja</h1>
+      <p class="lead">Baca novel klasik dan buku digital secara gratis, atau pinjam buku cetak koleksi kami. Cari judul, penulis, atau penerbit.</p>
+      <div class="search-box" data-live-search data-endpoint="{{ url_for('main.api_search') }}">
+        <form action="{{ url_for('main.books') }}" method="get" role="search">
+          <input type="search" name="q" placeholder="Cari judul atau penulis…" autocomplete="off" aria-label="Cari buku">
+          <button class="btn btn-accent" type="submit">Cari</button>
+        </form>
+        <div class="search-results" hidden></div>
+      </div>
+      <div class="hero-stats">
+        <div><b>{{ stats.books }}</b>judul buku</div>
+        <div><b>{{ stats.digital }}</b>bisa dibaca gratis</div>
+        <div><b>{{ stats.categories }}</b>kategori</div>
+        <div><b>{{ stats.members }}</b>anggota</div>
+      </div>
+    </div>
+    <div class="shelf" aria-hidden="true">
+      {% for h in [62, 85, 70, 100, 78, 92, 66, 88, 74, 96, 60, 82] %}
+      <div class="spine {{ 'lean' if loop.index == 8 }}" style="--i: {{ loop.index }}; height: {{ h }}%; background: hsl({{ (loop.index * 53 + 170) % 360 }} 45% {{ 38 if loop.index is odd else 46 }}%);"></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head"><h2>Kategori</h2><a href="{{ url_for('main.books') }}">Lihat semua buku</a></div>
+    <div class="cat-grid">
+      {% for c, n in cats %}
+      <a class="cat-card" href="{{ url_for('main.books', category=c.id) }}"><span class="cat-icon" aria-hidden="true">{{ c.icon }}</span><div><b>{{ c.name }}</b><span>{{ n }} buku</span></div></a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="section-head"><h2>Buku Terbaru</h2><a href="{{ url_for('main.books', sort='terbaru') }}">Lihat lainnya</a></div>
+    <div class="book-grid">{% for b in new_books %}{{ book_card(b) }}{% endfor %}</div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0">
+  <div class="container">
+    <div class="section-head"><h2>Buku Terpopuler</h2><a href="{{ url_for('main.books', sort='populer') }}">Lihat lainnya</a></div>
+    <div class="book-grid">{% for b in popular %}{{ book_card(b) }}{% endfor %}</div>
+  </div>
+</section>
+
+{% if not current_user.is_authenticated %}
+<section class="container">
+  <div class="card row row-between" style="background: var(--accent-soft); border-color: var(--accent)">
+    <div><h3 style="margin:0">Daftar gratis untuk membaca, mengunduh, dan meminjam</h3><span class="muted">Simpan favorit, beri ulasan, dan pantau batas pengembalian.</span></div>
+    <a class="btn btn-accent" href="{{ url_for('auth.register') }}">Buat akun</a>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

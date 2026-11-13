@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf, cover, stars, book_card %}
+{% block title %}{{ book.title }}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="detail">
+    <div>{{ cover(book, true) }}</div>
+    <div>
+      <p class="muted small"><a href="{{ url_for('main.books') }}">Katalog</a>{% if book.category %} / <a href="{{ url_for('main.books', category=book.category_id) }}">{{ book.category.name }}</a>{% endif %}</p>
+      <h1 style="margin-bottom:.2rem">{{ book.title }}</h1>
+      <p class="muted" style="font-size:1.1rem">oleh {{ book.author }}</p>
+      <div class="row">
+        {% if book.rating_count %}{{ stars(book.avg_rating) }} <b>{{ book.avg_rating }}</b> <span class="muted small">({{ book.rating_count }} ulasan)</span>{% else %}<span class="muted small">Belum ada ulasan</span>{% endif %}
+      </div>
+
+      <div class="actions">
+        {% if book.is_digital %}
+          {% if current_user.is_authenticated %}
+            {% if book.pdf_file or book.read_url %}<a class="btn" href="{{ url_for('main.read', book_id=book.id) }}">Baca Online</a>{% endif %}
+            {% if book.pdf_file or book.download_url %}<a class="btn btn-outline" href="{{ url_for('main.download', book_id=book.id) }}">Unduh Gratis</a>{% endif %}
+          {% else %}
+            <a class="btn" href="{{ url_for('auth.login', next=request.path) }}">Login untuk membaca &amp; mengunduh</a>
+          {% endif %}
+        {% else %}
+          {% if not current_user.is_authenticated %}
+            <a class="btn" href="{{ url_for('auth.login', next=request.path) }}">Login untuk meminjam</a>
+          {% elif active_loan %}
+            <span class="badge badge-{{ active_loan.status_class }}" style="padding:.55rem .9rem; font-size:.85rem">{{ active_loan.status_label }}{% if active_loan.due_date %} · kembali {{ active_loan.due_date|tgl }}{% endif %}</span>
+            <form method="post" action="{{ url_for('user.return_loan', loan_id=active_loan.id) }}" data-confirm="{{ 'Batalkan permintaan pinjam?' if active_loan.status == 'pending' else 'Kembalikan buku ini sekarang?' }}">{{ csrf() }}
+              <button class="btn btn-outline" type="submit">{{ 'Batalkan' if active_loan.status == 'pending' else 'Kembalikan Buku' }}</button></form>
+            {% if active_loan.status == 'borrowed' and not active_loan.extended and not active_loan.is_overdue and site.allow_extend == '1' %}
+            <form method="post" action="{{ url_for('user.extend_loan', loan_id=active_loan.id) }}">{{ csrf() }}<button class="btn btn-ghost" type="submit">Perpanjang</button></form>{% endif %}
+          {% elif book.stock > 0 %}
+            <form method="post" action="{{ url_for('user.borrow', book_id=book.id) }}">{{ csrf() }}<button class="btn" type="submit">Pinjam Buku ({{ site.loan_days }} hari)</button></form>
+          {% else %}
+            <button class="btn" disabled>Stok habis</button>
+          {% endif %}
+        {% endif %}
+        {% if current_user.is_authenticated %}
+          <form method="post" action="{{ url_for('user.favorite', book_id=book.id) }}" data-fav-form>{{ csrf() }}
+            <button class="btn btn-outline fav-btn" type="submit" aria-pressed="{{ 'true' if is_fav else 'false' }}">♥ <span>{{ 'Tersimpan di Favorit' if is_fav else 'Simpan ke Favorit' }}</span></button></form>
+        {% endif %}
+        {% if current_user.is_authenticated and current_user.is_admin %}<a class="btn btn-ghost" href="{{ url_for('admin.book_form', book_id=book.id) }}">Edit (admin)</a>{% endif %}
+      </div>
+
+      <div class="facts">
+        <div class="fact"><span>Jenis</span><b>{{ book.type_label }}</b></div>
+        {% if not book.is_digital %}<div class="fact"><span>Stok tersedia</span><b>{{ book.stock }} eksemplar</b></div>{% endif %}
+        {% if book.year %}<div class="fact"><span>Tahun terbit</span><b>{{ book.year if book.year > 0 else 'Sebelum Masehi' }}</b></div>{% endif %}
+        <div class="fact"><span>Penerbit</span><b>{{ book.publisher or '-' }}</b></div>
+        <div class="fact"><span>Bahasa</span><b>{{ book.language or '-' }}</b></div>
+        <div class="fact"><span>Dilihat</span><b>{{ book.views }}×</b></div>
+      </div>
+      <h3>Tentang buku ini</h3>
+      <p class="desc">{{ book.description or 'Belum ada deskripsi.' }}</p>
+      {% if book.source %}<p class="muted small">Sumber &amp; lisensi: {{ book.source }}</p>{% endif %}
+    </div>
+  </div>
+
+  <section id="ulasan" class="section" style="padding-top:1rem">
+    <h2>Ulasan</h2>
+    <div class="row" style="align-items:flex-start; gap:2rem">
+      <div class="card" style="flex:1 1 320px">
+        {% if current_user.is_authenticated %}
+        <h3>{{ 'Perbarui ulasan Anda' if my_review else 'Tulis ulasan' }}</h3>
+        <form method="post" action="{{ url_for('user.review', book_id=book.id) }}">{{ csrf() }}
+          <div class="field"><div class="star-input" role="radiogroup" aria-label="Rating">
+            {% for i in [5, 4, 3, 2, 1] %}<input type="radio" name="rating" id="star{{ i }}" value="{{ i }}" {{ 'checked' if my_review and my_review.rating == i }} required><label for="star{{ i }}" title="{{ i }} bintang">★</label>{% endfor %}
+          </div> <span class="muted small star-text">{{ my_review.rating ~ '/5' if my_review else 'Pilih bintang' }}</span></div>
+          <div class="field"><label class="lbl" for="comment">Komentar (opsional)</label><textarea class="input" id="comment" name="comment" maxlength="1000">{{ my_review.comment if my_review }}</textarea></div>
+          <button class="btn" type="submit">Simpan ulasan</button>
+        </form>
+        {% else %}<p>Login untuk memberi rating dan ulasan.</p><a class="btn" href="{{ url_for('auth.login', next=request.path) }}">Login</a>{% endif %}
+      </div>
+      <div class="card" style="flex:2 1 420px">
+        {% for r in reviews %}
+        <div class="review">
+          <div class="row row-between"><div class="row"><b>{{ r.user.name }}</b>{{ stars(r.rating) }}</div><span class="muted small">{{ r.created_at|tgl }}</span></div>
+          {% if r.comment %}<p style="margin:.4rem 0 0; white-space:pre-line">{{ r.comment }}</p>{% endif %}
+          {% if current_user.is_authenticated and (current_user.id == r.user_id or current_user.is_admin) %}
+          <form method="post" action="{{ url_for('admin.review_delete', review_id=r.id) if current_user.is_admin else url_for('user.delete_review', review_id=r.id) }}" data-confirm="Hapus ulasan ini?">{{ csrf() }}<button class="btn btn-ghost btn-sm" type="submit">Hapus</button></form>
+          {% endif %}
+        </div>
+        {% else %}<div class="empty">Belum ada ulasan. Jadilah yang pertama!</div>{% endfor %}
+      </div>
+    </div>
+  </section>
+
+  {% if related %}
+  <section class="section" style="padding-top:0"><h2>Buku serupa</h2><div class="book-grid">{% for b in related %}{{ book_card(b) }}{% endfor %}</div></section>
+  {% endif %}
+</div>
+{% endblock %}

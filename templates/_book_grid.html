@@ -1,0 +1,8 @@
+{% from "_macros.html" import book_card, pagination %}
+<p class="muted small">{{ pag.total }} buku ditemukan</p>
+{% if pag.items %}
+<div class="book-grid">{% for b in pag.items %}{{ book_card(b) }}{% endfor %}</div>
+{{ pagination(pag) }}
+{% else %}
+<div class="card empty">Tidak ada buku yang cocok. Coba kata kunci lain atau hapus beberapa filter.</div>
+{% endif %}

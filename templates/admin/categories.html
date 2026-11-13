@@ -1,0 +1,22 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf, pagination %}
+{% block admin_title %}Kategori{% endblock %}
+{% block admin_content %}
+<h1 style="font-size:2rem">Kelola kategori</h1>
+<form class="card" method="post" style="margin-bottom:1.5rem">{{ csrf() }}
+  <h3>{{ 'Edit kategori' if cat else 'Tambah kategori' }}</h3>
+  <div class="form-grid">
+    <div class="field"><label class="lbl" for="name">Nama *</label><input class="input" id="name" name="name" value="{{ request.form.get('name') if request.method == 'POST' else (cat.name if cat else '') }}" required maxlength="80"></div>
+    <div class="field"><label class="lbl" for="icon">Ikon (emoji)</label><input class="input" id="icon" name="icon" value="{{ cat.icon if cat else '📚' }}" maxlength="8"></div>
+    <div class="field full"><label class="lbl" for="description">Deskripsi</label><input class="input" id="description" name="description" value="{{ cat.description if cat else '' }}" maxlength="255"></div>
+  </div>
+  <div class="row"><button class="btn" type="submit">Simpan kategori</button>{% if cat %}<a class="btn btn-ghost" href="{{ url_for('admin.categories') }}">Batal</a>{% endif %}</div>
+</form>
+<form class="toolbar" method="get"><input class="input grow" type="search" name="q" value="{{ request.args.get('q', '') }}" placeholder="Cari kategori" aria-label="Cari"><button class="btn" type="submit">Cari</button></form>
+<div class="table-wrap"><table class="table"><thead><tr><th>Ikon</th><th>Nama</th><th>Deskripsi</th><th>Jumlah buku</th><th>Aksi</th></tr></thead><tbody>
+{% for c in pag.items %}<tr><td style="font-size:1.4rem">{{ c.icon }}</td><td><b>{{ c.name }}</b></td><td class="muted">{{ c.description }}</td><td>{{ c.books.count() }}</td>
+<td><div class="actions-cell"><a class="btn btn-outline btn-sm" href="{{ url_for('admin.categories', cat_id=c.id) }}">Edit</a>
+<form method="post" action="{{ url_for('admin.category_delete', cat_id=c.id) }}" data-confirm="Hapus kategori ini?">{{ csrf() }}<button class="btn btn-danger btn-sm" type="submit">Hapus</button></form></div></td></tr>
+{% else %}<tr><td colspan="5" class="empty">Belum ada kategori.</td></tr>{% endfor %}</tbody></table></div>
+{{ pagination(pag) }}
+{% endblock %}

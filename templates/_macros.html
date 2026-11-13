@@ -1,0 +1,45 @@
+{# Makro bersama: CSRF, cover, kartu buku, bintang, pagination #}
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro cover(b, big=false) %}
+<div class="cover {{ 'cover-lg' if big }}">
+  {% if b.cover_src %}
+    <img src="{{ b.cover_src }}" alt="Sampul {{ b.title }}" loading="lazy" referrerpolicy="no-referrer"
+         {% if b.cover_backup and b.cover_src != b.cover_backup %}onerror="this.onerror=null;this.src='{{ b.cover_backup }}'"{% endif %}>
+  {% else %}
+    {% set hue = (b.id * 47) % 360 %}
+    <div class="cover-fallback" style="background: linear-gradient(160deg, hsl({{ hue }} 42% 34%), hsl({{ (hue + 45) % 360 }} 48% 20%));">
+      <div class="t">{{ b.title }}</div><div class="a">{{ b.author }}</div>
+    </div>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{% macro stars(value) %}<span class="stars" style="--rating: {{ value }}" role="img" aria-label="Rating {{ value }} dari 5">★★★★★</span>{% endmacro %}
+
+{% macro book_card(b) %}
+<a class="book-card" href="{{ url_for('main.book_detail', book_id=b.id) }}">
+  {{ cover(b) }}
+  <div class="book-meta">
+    <h3>{{ b.title }}</h3>
+    <p>{{ b.author }}{% if b.year and b.year > 0 %} · {{ b.year }}{% endif %}</p>
+    <span class="badge badge-{{ b.book_type }} card-tag">{{ b.type_label }}</span>
+    {% if b.rating_count %}<div>{{ stars(b.avg_rating) }}</div>{% endif %}
+  </div>
+</a>
+{% endmacro %}
+
+{% macro pagination(pag) %}
+{% if pag.pages > 1 %}
+<nav class="pagination" aria-label="Halaman">
+  {% if pag.has_prev %}<a href="{{ page_url(pag.prev_num) }}" aria-label="Sebelumnya">‹</a>{% endif %}
+  {% for p in pag.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+    {% if p %}
+      {% if p == pag.page %}<span class="current" aria-current="page">{{ p }}</span>
+      {% else %}<a href="{{ page_url(p) }}">{{ p }}</a>{% endif %}
+    {% else %}<span class="gap">…</span>{% endif %}
+  {% endfor %}
+  {% if pag.has_next %}<a href="{{ page_url(pag.next_num) }}" aria-label="Berikutnya">›</a>{% endif %}
+</nav>
+{% endif %}
+{% endmacro %}

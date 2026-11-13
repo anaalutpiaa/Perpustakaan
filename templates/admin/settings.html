@@ -1,0 +1,28 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block admin_title %}Pengaturan{% endblock %}
+{% block admin_content %}
+<h1 style="font-size:2rem">Pengaturan perpustakaan</h1>
+<form method="post">{{ csrf() }}
+  <div class="card" style="margin-bottom:1rem"><h3>Identitas</h3>
+    <div class="form-grid">
+      <div class="field"><label class="lbl" for="site_name">Nama perpustakaan</label><input class="input" id="site_name" name="site_name" value="{{ s.get('site_name', '') }}" required maxlength="60"></div>
+      <div class="field"><label class="lbl" for="contact_email">Email kontak</label><input class="input" id="contact_email" type="email" name="contact_email" value="{{ s.get('contact_email', '') }}"></div>
+      <div class="field full"><label class="lbl" for="tagline">Slogan singkat (footer)</label><input class="input" id="tagline" name="tagline" value="{{ s.get('tagline', '') }}" maxlength="160"></div>
+      <div class="field"><label class="lbl" for="address">Alamat</label><input class="input" id="address" name="address" value="{{ s.get('address', '') }}"></div>
+      <div class="field"><label class="lbl" for="open_hours">Jam buka</label><input class="input" id="open_hours" name="open_hours" value="{{ s.get('open_hours', '') }}"></div>
+    </div></div>
+  <div class="card" style="margin-bottom:1rem"><h3>Aturan peminjaman</h3>
+    <div class="form-grid">
+      <div class="field"><label class="lbl" for="loan_days">Lama pinjam (hari)</label><input class="input" id="loan_days" type="number" min="1" max="60" name="loan_days" value="{{ s.get('loan_days', 7) }}"></div>
+      <div class="field"><label class="lbl" for="max_active_loans">Maks. pinjaman aktif per anggota</label><input class="input" id="max_active_loans" type="number" min="1" max="20" name="max_active_loans" value="{{ s.get('max_active_loans', 3) }}"></div>
+    </div>
+    <div class="stack">
+      <label class="check"><input type="checkbox" name="require_approval" {{ 'checked' if s.get('require_approval') in ('1', 'on') }}> Pinjaman harus disetujui admin dulu (jika mati: pinjam langsung aktif)</label>
+      <label class="check"><input type="checkbox" name="allow_extend" {{ 'checked' if s.get('allow_extend') in ('1', 'on') }}> Izinkan anggota memperpanjang pinjaman satu kali</label>
+    </div></div>
+  <div class="card" style="margin-bottom:1rem"><h3>Pendaftaran</h3>
+    <label class="check"><input type="checkbox" name="allow_register" {{ 'checked' if s.get('allow_register') in ('1', 'on') }}> Izinkan pendaftaran anggota baru</label></div>
+  <button class="btn" type="submit">Simpan pengaturan</button>
+</form>
+{% endblock %}

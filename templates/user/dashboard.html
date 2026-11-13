@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="container" style="padding-bottom:2rem">
+  <div class="page-head"><h1>Halo, {{ current_user.name }}</h1><p class="muted">Ringkasan aktivitas peminjaman Anda.</p></div>
+  {% if stats.overdue %}<div class="flash flash-danger" style="animation:none; margin-bottom:1rem"><span><b>{{ stats.overdue }} buku terlambat dikembalikan.</b> Segera kembalikan agar bisa meminjam lagi.</span></div>{% endif %}
+  <div class="stat-grid">
+    <div class="stat"><span>Sedang dipinjam</span><b>{{ stats.active }}</b></div>
+    <div class="stat bad"><span>Terlambat</span><b>{{ stats.overdue }}</b></div>
+    <div class="stat warn"><span>Favorit</span><b>{{ stats.favorites }}</b></div>
+    <div class="stat good"><span>Total riwayat</span><b>{{ stats.history }}</b></div>
+  </div>
+  <div class="section-head"><h2>Pinjaman aktif</h2><div class="row"><a class="btn btn-outline btn-sm" href="{{ url_for('user.history') }}">Riwayat</a><a class="btn btn-outline btn-sm" href="{{ url_for('user.favorites') }}">Favorit</a><a class="btn btn-outline btn-sm" href="{{ url_for('user.profile') }}">Profil</a></div></div>
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Buku</th><th>Status</th><th>Batas kembali</th><th></th></tr></thead>
+    <tbody>
+    {% for l in loans %}
+      <tr>
+        <td><a href="{{ url_for('main.book_detail', book_id=l.book_id) }}"><b>{{ l.book.title }}</b></a><div class="muted small">{{ l.book.author }}</div></td>
+        <td><span class="badge badge-{{ l.status_class }}">{{ l.status_label }}</span>{% if l.is_overdue %}<div class="small" style="color:var(--danger)">Terlambat {{ l.days_late }} hari</div>{% endif %}</td>
+        <td>{% if l.due_date %}{{ l.due_date|tgl }}{% if l.days_left is not none and l.days_left >= 0 %}<div class="muted small">{{ l.days_left }} hari lagi</div>{% endif %}{% else %}-{% endif %}</td>
+        <td><div class="actions-cell">
+          <form method="post" action="{{ url_for('user.return_loan', loan_id=l.id) }}" data-confirm="{{ 'Batalkan permintaan?' if l.status == 'pending' else 'Kembalikan buku ini?' }}">{{ csrf() }}<button class="btn btn-sm {{ 'btn-outline' if l.status == 'pending' else '' }}" type="submit">{{ 'Batalkan' if l.status == 'pending' else 'Kembalikan' }}</button></form>
+          {% if l.status == 'borrowed' and not l.extended and not l.is_overdue and site.allow_extend == '1' %}<form method="post" action="{{ url_for('user.extend_loan', loan_id=l.id) }}">{{ csrf() }}<button class="btn btn-ghost btn-sm" type="submit">Perpanjang</button></form>{% endif %}
+        </div></td>
+      </tr>
+    {% else %}<tr><td colspan="4" class="empty">Belum ada pinjaman aktif. <a href="{{ url_for('main.books', type='physical') }}">Pilih buku untuk dipinjam</a>.</td></tr>{% endfor %}
+    </tbody></table></div>
+</div>
+{% endblock %}

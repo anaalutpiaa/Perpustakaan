@@ -1,0 +1,13 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf, pagination, stars %}
+{% block admin_title %}Ulasan{% endblock %}
+{% block admin_content %}
+<h1 style="font-size:2rem">Kelola ulasan</h1>
+<form class="toolbar" method="get"><input class="input grow" type="search" name="q" value="{{ request.args.get('q', '') }}" placeholder="Cari komentar, user, atau judul" aria-label="Cari"><button class="btn" type="submit">Cari</button></form>
+<div class="table-wrap"><table class="table"><thead><tr><th>Buku</th><th>User</th><th>Rating</th><th>Komentar</th><th>Tanggal</th><th>Aksi</th></tr></thead><tbody>
+{% for r in pag.items %}<tr><td><a href="{{ url_for('main.book_detail', book_id=r.book_id) }}">{{ r.book.title }}</a></td><td>@{{ r.user.username }}</td><td>{{ stars(r.rating) }}</td>
+<td style="max-width:360px; white-space:pre-line">{{ r.comment or '—' }}</td><td>{{ r.created_at|tgl }}</td>
+<td><form method="post" action="{{ url_for('admin.review_delete', review_id=r.id) }}" data-confirm="Hapus ulasan ini?">{{ csrf() }}<button class="btn btn-danger btn-sm" type="submit">Hapus</button></form></td></tr>
+{% else %}<tr><td colspan="6" class="empty">Tidak ada ulasan.</td></tr>{% endfor %}</tbody></table></div>
+{{ pagination(pag) }}
+{% endblock %}

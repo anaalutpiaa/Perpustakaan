@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Baca: {{ book.title }}{% endblock %}
+{% block content %}
+<div class="container" style="padding:1.25rem 0 2rem">
+  <div class="row row-between" style="margin-bottom:.75rem">
+    <div><h2 style="margin:0">{{ book.title }}</h2><span class="muted">{{ book.author }}</span></div>
+    <div class="row">
+      <a class="btn btn-outline btn-sm" href="{{ src }}" target="_blank" rel="noopener noreferrer">Buka di tab baru</a>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('main.book_detail', book_id=book.id) }}">Kembali</a>
+    </div>
+  </div>
+  <p class="muted small">Jika area baca tampak kosong, situs sumber melarang ditampilkan di halaman lain — gunakan tombol “Buka di tab baru”. {{ book.source }}</p>
+  <iframe src="{{ src }}" title="Baca {{ book.title }}" style="width:100%; height:78vh; border:1px solid var(--border); border-radius:12px; background:#fff" referrerpolicy="no-referrer" sandbox="allow-same-origin allow-scripts allow-popups"></iframe>
+</div>
+{% endblock %}

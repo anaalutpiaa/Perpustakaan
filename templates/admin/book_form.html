@@ -1,0 +1,58 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block admin_title %}{{ 'Edit' if book else 'Tambah' }} buku{% endblock %}
+{% block admin_content %}
+<h1 style="font-size:2rem">{{ 'Edit buku' if book else 'Tambah buku' }}</h1>
+
+<div class="card quick-add" style="margin-bottom:1.25rem" data-fetch-endpoint="{{ url_for('admin.api_fetch_meta') }}" data-cover-endpoint="{{ url_for('admin.api_cover_search') }}">
+  <h3 style="margin-bottom:.25rem">Mulai cepat dari link</h3>
+  <p class="muted small">Tempel link buku (Project Gutenberg, halaman buku, atau PDF langsung). Judul, penulis, deskripsi, tautan baca/unduh, dan cover terisi otomatis. Anda tinggal memeriksa lalu menyimpan.</p>
+  <div class="row" style="flex-wrap:nowrap">
+    <input class="input" id="quick-url" type="url" placeholder="https://www.gutenberg.org/ebooks/1342" aria-label="Link buku">
+    <button class="btn" type="button" id="quick-fetch">Ambil data</button>
+  </div>
+  <div class="hint" id="quick-status" role="status"></div>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="book-form">{{ csrf() }}
+  <div class="book-form-grid">
+    <div class="card">
+      <div class="form-grid">
+        <div class="field full"><label class="lbl" for="title">Judul *</label><input class="input" id="title" name="title" value="{{ values.get('title') or '' }}" required maxlength="200"></div>
+        <div class="field"><label class="lbl" for="author">Penulis *</label><input class="input" id="author" name="author" value="{{ values.get('author') or '' }}" required maxlength="150"></div>
+        <div class="field"><label class="lbl" for="publisher">Penerbit</label><input class="input" id="publisher" name="publisher" value="{{ values.get('publisher') or '' }}"></div>
+        <div class="field"><label class="lbl" for="year">Tahun terbit</label><input class="input" id="year" type="number" name="year" value="{{ values.get('year') or '' }}"></div>
+        <div class="field"><label class="lbl" for="language">Bahasa</label><input class="input" id="language" name="language" value="{{ values.get('language') or '' }}"></div>
+        <div class="field"><label class="lbl" for="category_id">Kategori</label><select class="input" id="category_id" name="category_id"><option value="">— Tanpa kategori —</option>
+          {% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if values.get('category_id')|string == c.id|string }}>{{ c.name }}</option>{% endfor %}</select></div>
+        <div class="field"><label class="lbl" for="book_type">Jenis</label><select class="input" id="book_type" name="book_type">
+          <option value="digital" {{ 'selected' if values.get('book_type') == 'digital' }}>Gratis/Digital (baca &amp; unduh)</option><option value="physical" {{ 'selected' if values.get('book_type') == 'physical' }}>Fisik/Pinjam</option></select></div>
+        <div class="field" id="stock-field"><label class="lbl" for="stock">Stok (buku fisik)</label><input class="input" id="stock" type="number" min="0" name="stock" value="{{ values.get('stock') or 0 }}"></div>
+        <div class="field"><label class="lbl" for="source">Sumber &amp; lisensi</label><input class="input" id="source" name="source" value="{{ values.get('source') or '' }}" placeholder="mis. Project Gutenberg — Domain Publik"></div>
+        <div class="field full"><label class="lbl" for="description">Deskripsi</label><textarea class="input" id="description" name="description">{{ values.get('description') or '' }}</textarea></div>
+        <div class="field digital-only"><label class="lbl" for="read_url">Tautan baca online</label><input class="input" id="read_url" type="url" name="read_url" value="{{ values.get('read_url') or '' }}" placeholder="https://…"></div>
+        <div class="field digital-only"><label class="lbl" for="download_url">Tautan unduh</label><input class="input" id="download_url" type="url" name="download_url" value="{{ values.get('download_url') or '' }}" placeholder="https://…"></div>
+        <div class="field full digital-only"><label class="lbl" for="pdf">Atau upload file buku (PDF, maks 25 MB)</label><input class="input" id="pdf" type="file" name="pdf" accept=".pdf,application/pdf">
+          <div class="hint">{% if book and book.pdf_file %}PDF tersimpan di server. Pilih file baru untuk menggantinya. {% endif %}File PDF yang diupload akan dipakai untuk “Baca Online” dan “Unduh”.</div></div>
+      </div>
+    </div>
+
+    <aside class="card cover-panel">
+      <h3>Foto sampul</h3>
+      <div class="cover-preview" id="cover-preview-box">
+        {% if book and book.cover_src %}<img id="cover-preview" src="{{ book.cover_src }}" alt="Pratinjau sampul" referrerpolicy="no-referrer">{% else %}<img id="cover-preview" alt="Pratinjau sampul" hidden><span id="cover-empty" class="muted small">Belum ada sampul.<br>Upload foto, tempel URL, atau cari otomatis.</span>{% endif %}
+      </div>
+      <label class="dropzone" id="dropzone" for="cover"><b>Pilih foto</b> atau seret ke sini<br><span class="small muted">JPG/PNG, maks 2 MB</span></label>
+      <input id="cover" class="sr-only" type="file" name="cover" accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+      <div class="field" style="margin-top:.9rem"><label class="lbl" for="cover_url">…atau URL gambar sampul</label><input class="input" id="cover_url" type="url" name="cover_url" value="{{ values.get('cover_url') or '' }}" placeholder="https://…/sampul.jpg"></div>
+      <button class="btn btn-outline btn-sm btn-block" type="button" id="cover-search">🔎 Cari sampul otomatis (Open Library)</button>
+      <div class="hint" id="cover-status" role="status"></div>
+      <div class="cover-results" id="cover-results"></div>
+      <label class="check" style="margin-top:.8rem"><input type="checkbox" name="save_local" {{ 'checked' if values.get('save_local') }}> Salin gambar URL ke server (tetap tampil walau situs asal mati)</label>
+      {% if book and book.cover_src %}<label class="check" style="margin-top:.5rem"><input type="checkbox" name="remove_cover"> Hapus sampul saat ini</label>{% endif %}
+    </aside>
+  </div>
+  <div class="row" style="margin-top:1rem"><button class="btn" type="submit">Simpan buku</button><a class="btn btn-ghost" href="{{ url_for('admin.books') }}">Batal</a></div>
+</form>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/admin.js') }}"></script>{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block admin_title %}{{ 'Edit' if user else 'Tambah' }} user{% endblock %}
+{% block admin_content %}
+<h1 style="font-size:2rem">{{ 'Edit user' if user else 'Tambah user' }}</h1>
+<form class="card" method="post">{{ csrf() }}
+  <div class="form-grid">
+    <div class="field"><label class="lbl" for="name">Nama lengkap *</label><input class="input" id="name" name="name" value="{{ values.get('name', '') }}" required></div>
+    <div class="field"><label class="lbl" for="username">Username *</label><input class="input" id="username" name="username" value="{{ values.get('username', '') }}" required></div>
+    <div class="field"><label class="lbl" for="email">Email *</label><input class="input" id="email" type="email" name="email" value="{{ values.get('email', '') }}" required></div>
+    <div class="field"><label class="lbl" for="password">Password {{ '(kosongkan jika tidak diubah)' if user else '*' }}</label><input class="input" id="password" type="password" name="password" minlength="8" {{ '' if user else 'required' }} autocomplete="new-password"></div>
+    <div class="field"><label class="lbl" for="role">Role</label><select class="input" id="role" name="role"><option value="user" {{ 'selected' if values.get('role') == 'user' }}>User</option><option value="admin" {{ 'selected' if values.get('role') == 'admin' }}>Admin</option></select></div>
+    <div class="field"><label class="lbl">Status akun</label><label class="check"><input type="checkbox" name="active" {{ 'checked' if values.get('active') }}> Akun aktif (hilangkan centang untuk memblokir)</label></div>
+  </div>
+  <div class="row"><button class="btn" type="submit">Simpan user</button><a class="btn btn-ghost" href="{{ url_for('admin.users') }}">Batal</a></div>
+</form>
+{% endblock %}

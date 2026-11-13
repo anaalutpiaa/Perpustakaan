@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination %}
+{% block title %}Riwayat Peminjaman{% endblock %}
+{% block content %}
+<div class="container" style="padding-bottom:2rem">
+  <div class="page-head"><h1>Riwayat peminjaman</h1></div>
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Buku</th><th>Diajukan</th><th>Dipinjam</th><th>Batas</th><th>Dikembalikan</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for l in pag.items %}
+      <tr><td><a href="{{ url_for('main.book_detail', book_id=l.book_id) }}">{{ l.book.title }}</a></td>
+        <td>{{ l.requested_at|tgl }}</td><td>{{ l.borrowed_at|tgl }}</td><td>{{ l.due_date|tgl }}</td><td>{{ l.returned_at|tgl }}</td>
+        <td><span class="badge badge-{{ l.status_class }}">{{ l.status_label }}</span></td></tr>
+    {% else %}<tr><td colspan="6" class="empty">Belum ada riwayat peminjaman.</td></tr>{% endfor %}
+    </tbody></table></div>
+  {{ pagination(pag) }}
+</div>
+{% endblock %}

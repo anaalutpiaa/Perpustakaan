@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="auth-wrap"><div class="card auth-card">
+  <h1>Masuk</h1><p class="muted">Gunakan username atau email Anda.</p>
+  <form method="post" novalidate>{{ csrf() }}
+    <div class="field"><label class="lbl" for="identity">Username atau email</label><input class="input" id="identity" name="identity" autocomplete="username" required autofocus></div>
+    <div class="field"><label class="lbl" for="password">Password</label><input class="input" id="password" type="password" name="password" autocomplete="current-password" required></div>
+    <div class="field"><label class="check"><input type="checkbox" name="remember"> Ingat saya (30 hari)</label></div>
+    <button class="btn btn-block" type="submit">Login</button>
+  </form>
+  <p class="muted small center" style="margin-top:1rem">Belum punya akun? <a href="{{ url_for('auth.register') }}">Daftar sekarang</a></p>
+</div></div>
+{% endblock %}

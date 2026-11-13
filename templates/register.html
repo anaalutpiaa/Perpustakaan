@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Daftar{% endblock %}
+{% block content %}
+<div class="auth-wrap"><div class="card auth-card">
+  <h1>Buat akun</h1><p class="muted">Gratis. Cukup satu menit.</p>
+  <form method="post" novalidate>{{ csrf() }}
+    <div class="field"><label class="lbl" for="name">Nama lengkap</label><input class="input" id="name" name="name" value="{{ form.get('name', '') }}" required maxlength="100"></div>
+    <div class="field"><label class="lbl" for="username">Username</label><input class="input" id="username" name="username" value="{{ form.get('username', '') }}" required maxlength="30" autocomplete="username"><div class="hint">3–30 karakter: huruf, angka, garis bawah.</div></div>
+    <div class="field"><label class="lbl" for="email">Email</label><input class="input" id="email" type="email" name="email" value="{{ form.get('email', '') }}" required autocomplete="email"></div>
+    <div class="field"><label class="lbl" for="password">Password</label><input class="input" id="password" type="password" name="password" required minlength="8" autocomplete="new-password"><div class="hint">Minimal 8 karakter.</div></div>
+    <div class="field"><label class="lbl" for="confirm">Konfirmasi password</label><input class="input" id="confirm" type="password" name="confirm" required autocomplete="new-password"></div>
+    <button class="btn btn-block" type="submit">Daftar</button>
+  </form>
+  <p class="muted small center" style="margin-top:1rem">Sudah punya akun? <a href="{{ url_for('auth.login') }}">Login</a></p>
+</div></div>
+{% endblock %}

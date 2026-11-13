@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}500{% endblock %}
+{% block content %}
+<div class="container error-page"><div class="code">500</div><h1 style="font-size:2rem">Terjadi kesalahan</h1><p class="muted">Ada masalah di server kami. Coba lagi beberapa saat lagi.</p>
+<div class="row" style="justify-content:center"><a class="btn" href="{{ url_for('main.index') }}">Ke beranda</a><a class="btn btn-outline" href="{{ url_for('main.books') }}">Lihat katalog</a></div></div>
+{% endblock %}

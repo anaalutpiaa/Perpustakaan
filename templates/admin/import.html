@@ -1,0 +1,33 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf %}
+{% block admin_title %}Impor massal{% endblock %}
+{% block admin_content %}
+<h1 style="font-size:2rem">Impor banyak buku sekaligus</h1>
+<div class="card" style="margin-bottom:1.25rem">
+  <p>Satu baris = satu buku. Ada dua cara menulisnya:</p>
+  <ol>
+    <li><b>Hanya link</b> — data diambil otomatis dari halaman (maks. {{ 10 }} link per impor). Contoh: <code>https://www.gutenberg.org/ebooks/84</code></li>
+    <li><b>Format lengkap</b> dipisah garis tegak:<br><code>Judul | Penulis | Kategori | Jenis | Link baca/unduh | URL cover | Stok</code><br>
+      Hanya judul yang wajib. Jenis: <code>digital</code> atau <code>fisik</code>. Kategori baru dibuat otomatis jika belum ada.</li>
+  </ol>
+  <form method="post">{{ csrf() }}
+    <div class="field"><label class="lbl" for="lines">Daftar buku</label>
+<textarea class="input" id="lines" name="lines" rows="9" style="font-family:ui-monospace,Consolas,monospace; font-size:.85rem" placeholder="https://www.gutenberg.org/ebooks/84
+https://www.gutenberg.org/ebooks/1342
+Laskar Pelangi | Andrea Hirata | Sastra Indonesia Klasik | fisik | | | 3
+Think Python | Allen Downey | Pemrograman & Komputer | digital | https://greenteapress.com/wp/think-python-2e/ | https://example.com/sampul.jpg">{{ request.form.get('lines', '') }}</textarea></div>
+    <div class="form-grid">
+      <div class="field"><label class="lbl" for="category_id">Kategori bawaan (jika baris tidak menyebut kategori)</label><select class="input" id="category_id" name="category_id"><option value="">— Tanpa kategori —</option>{% for c in categories %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}</select></div>
+      <div class="field"><label class="lbl" for="book_type">Jenis bawaan</label><select class="input" id="book_type" name="book_type"><option value="digital">Gratis/Digital</option><option value="physical">Fisik/Pinjam</option></select></div>
+    </div>
+    <label class="check" style="margin-bottom:1rem"><input type="checkbox" name="save_local" checked> Salin gambar sampul dari URL ke server</label>
+    <button class="btn" type="submit">Impor sekarang</button>
+  </form>
+</div>
+{% if report %}
+<div class="table-wrap"><table class="table"><thead><tr><th>Baris / judul</th><th>Hasil</th></tr></thead><tbody>
+{% for name, ok, note in report %}<tr><td>{{ name }}</td><td><span class="badge badge-{{ 'success' if ok else 'danger' }}">{{ 'Berhasil' if ok else 'Dilewati' }}</span> <span class="muted small">{{ note }}</span></td></tr>{% endfor %}
+</tbody></table></div>
+<p style="margin-top:1rem"><a class="btn btn-outline" href="{{ url_for('admin.books') }}">Lihat daftar buku</a></p>
+{% endif %}
+{% endblock %}

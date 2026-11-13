@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Admin · {% block admin_title %}{% endblock %}{% endblock %}
+{% block content %}
+<div class="container admin-layout">
+  {% set ep = request.endpoint %}
+  <aside class="sidebar" aria-label="Menu admin">
+    <a href="{{ url_for('admin.dashboard') }}" class="{{ 'active' if ep == 'admin.dashboard' }}">📊 Dashboard</a>
+    <a href="{{ url_for('admin.books') }}" class="{{ 'active' if ep in ['admin.books', 'admin.book_form'] }}">📚 Buku</a>
+    <a href="{{ url_for('admin.categories') }}" class="{{ 'active' if ep == 'admin.categories' }}">🗂️ Kategori</a>
+    <a href="{{ url_for('admin.users') }}" class="{{ 'active' if ep in ['admin.users', 'admin.user_form'] }}">👥 User</a>
+    <a href="{{ url_for('admin.loans') }}" class="{{ 'active' if ep == 'admin.loans' }}">🔄 Peminjaman</a>
+    <a href="{{ url_for('admin.reviews') }}" class="{{ 'active' if ep == 'admin.reviews' }}">💬 Ulasan</a>
+    <a href="{{ url_for('admin.books_import') }}" class="{{ 'active' if ep == 'admin.books_import' }}">📥 Impor massal</a>
+    <a href="{{ url_for('admin.settings') }}" class="{{ 'active' if ep == 'admin.settings' }}">⚙️ Pengaturan</a>
+  </aside>
+  <section style="min-width:0">{% block admin_content %}{% endblock %}</section>
+</div>
+{% endblock %}

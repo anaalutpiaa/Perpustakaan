@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Katalog Buku{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="page-head"><h1>Katalog Buku</h1><p class="muted">Cari, saring, dan urutkan seluruh koleksi. Hasil diperbarui otomatis saat Anda mengetik.</p></div>
+  {% set a = request.args %}
+  <form class="filters" id="filter-form" method="get" action="{{ url_for('main.books') }}">
+    <div><label class="lbl small" for="f-q">Kata kunci</label><input class="input" id="f-q" type="search" name="q" value="{{ a.get('q', '') }}" placeholder="Judul, penulis, penerbit"></div>
+    <div><label class="lbl small" for="f-cat">Kategori</label>
+      <select class="input" id="f-cat" name="category"><option value="">Semua</option>
+        {% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if a.get('category') == c.id|string }}>{{ c.name }}</option>{% endfor %}</select></div>
+    <div><label class="lbl small" for="f-author">Penulis</label><input class="input" id="f-author" name="author" value="{{ a.get('author', '') }}"></div>
+    <div><label class="lbl small" for="f-year">Tahun</label><input class="input" id="f-year" type="number" name="year" value="{{ a.get('year', '') }}"></div>
+    <div><label class="lbl small" for="f-type">Jenis</label>
+      <select class="input" id="f-type" name="type"><option value="">Semua</option>
+        <option value="digital" {{ 'selected' if a.get('type') == 'digital' }}>Gratis/Digital</option>
+        <option value="physical" {{ 'selected' if a.get('type') == 'physical' }}>Fisik/Pinjam</option></select></div>
+    <div><label class="lbl small" for="f-sort">Urutkan</label>
+      <select class="input" id="f-sort" name="sort">
+        <option value="terbaru" {{ 'selected' if a.get('sort', 'terbaru') == 'terbaru' }}>Terbaru</option>
+        <option value="populer" {{ 'selected' if a.get('sort') == 'populer' }}>Terpopuler</option>
+        <option value="judul" {{ 'selected' if a.get('sort') == 'judul' }}>Judul A–Z</option></select></div>
+    <button class="btn" type="submit">Terapkan</button>
+  </form>
+  <div id="book-results">{% include "_book_grid.html" %}</div>
+</div>
+{% endblock %}

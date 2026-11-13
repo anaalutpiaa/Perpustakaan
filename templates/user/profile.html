@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf %}
+{% block title %}Profil{% endblock %}
+{% block content %}
+<div class="container" style="padding-bottom:2rem">
+  <div class="page-head"><h1>Profil saya</h1><p class="muted">Anggota sejak {{ current_user.created_at|tgl }} · peran: {{ current_user.role }}</p></div>
+  <div class="row" style="align-items:flex-start; gap:1.5rem">
+    <div class="card" style="flex:1 1 340px"><h3>Data akun</h3>
+      <form method="post" action="{{ url_for('user.profile') }}">{{ csrf() }}
+        {% set v = request.form if request.method == 'POST' else {'name': current_user.name, 'username': current_user.username, 'email': current_user.email} %}
+        <div class="field"><label class="lbl" for="name">Nama lengkap</label><input class="input" id="name" name="name" value="{{ v.name }}" required></div>
+        <div class="field"><label class="lbl" for="username">Username</label><input class="input" id="username" name="username" value="{{ v.username }}" required></div>
+        <div class="field"><label class="lbl" for="email">Email</label><input class="input" id="email" type="email" name="email" value="{{ v.email }}" required></div>
+        <button class="btn" type="submit">Simpan profil</button></form></div>
+    <div class="card" style="flex:1 1 340px"><h3>Ganti password</h3>
+      <form method="post" action="{{ url_for('user.change_password') }}">{{ csrf() }}
+        <div class="field"><label class="lbl" for="old">Password lama</label><input class="input" id="old" type="password" name="old_password" required autocomplete="current-password"></div>
+        <div class="field"><label class="lbl" for="new">Password baru</label><input class="input" id="new" type="password" name="new_password" required minlength="8" autocomplete="new-password"><div class="hint">Minimal 8 karakter.</div></div>
+        <div class="field"><label class="lbl" for="conf">Konfirmasi password baru</label><input class="input" id="conf" type="password" name="confirm" required autocomplete="new-password"></div>
+        <button class="btn" type="submit">Ganti password</button></form></div>
+  </div>
+</div>
+{% endblock %}

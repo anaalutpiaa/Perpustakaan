@@ -1,0 +1,24 @@
+{% extends "admin/base.html" %}
+{% from "_macros.html" import csrf, pagination %}
+{% block admin_title %}Buku{% endblock %}
+{% block admin_content %}
+<div class="row row-between" style="margin-bottom:1rem"><h1 style="font-size:2rem; margin:0">Kelola buku</h1><div class="row"><a class="btn btn-outline" href="{{ url_for('admin.books_import') }}">📥 Impor massal</a><a class="btn" href="{{ url_for('admin.book_form') }}">+ Tambah buku</a></div></div>
+<form class="toolbar" method="get">
+  <input class="input grow" type="search" name="q" value="{{ request.args.get('q', '') }}" placeholder="Cari judul atau penulis" aria-label="Cari">
+  <select class="input" name="category" aria-label="Kategori"><option value="">Semua kategori</option>{% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if request.args.get('category') == c.id|string }}>{{ c.name }}</option>{% endfor %}</select>
+  <button class="btn" type="submit">Cari</button>
+</form>
+<div class="table-wrap"><table class="table"><thead><tr><th>Buku</th><th>Kategori</th><th>Jenis</th><th>Stok</th><th>Dilihat</th><th>Aksi</th></tr></thead><tbody>
+{% for b in pag.items %}
+<tr>
+  <td><div class="cell-book"><div class="cover thumb">{% if b.cover_src %}<img src="{{ b.cover_src }}" alt="">{% else %}{% set hue = (b.id * 47) % 360 %}<div class="cover-fallback" style="background: hsl({{ hue }} 42% 30%)"><div class="t">{{ b.title }}</div></div>{% endif %}</div><div><b>{{ b.title }}</b><div class="muted small">{{ b.author }}</div></div></div></td>
+  <td>{{ b.category.name if b.category else '-' }}</td>
+  <td><span class="badge badge-{{ b.book_type }}">{{ b.type_label }}</span></td>
+  <td>{{ b.stock if not b.is_digital else '—' }}</td><td>{{ b.views }}</td>
+  <td><div class="actions-cell"><a class="btn btn-outline btn-sm" href="{{ url_for('admin.book_form', book_id=b.id) }}">Edit</a>
+    <form method="post" action="{{ url_for('admin.book_delete', book_id=b.id) }}" data-confirm="Hapus buku “{{ b.title }}” beserta ulasannya?">{{ csrf() }}<button class="btn btn-danger btn-sm" type="submit">Hapus</button></form></div></td>
+</tr>
+{% else %}<tr><td colspan="6" class="empty">Tidak ada buku.</td></tr>{% endfor %}
+</tbody></table></div>
+{{ pagination(pag) }}
+{% endblock %}

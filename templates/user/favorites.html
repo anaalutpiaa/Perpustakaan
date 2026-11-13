@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% from "_macros.html" import book_card, pagination %}
+{% block title %}Favorit{% endblock %}
+{% block content %}
+<div class="container" style="padding-bottom:2rem">
+  <div class="page-head"><h1>Buku favorit</h1><p class="muted">Buku yang Anda simpan.</p></div>
+  {% if pag.items %}<div class="book-grid">{% for b in pag.items %}{{ book_card(b) }}{% endfor %}</div>{{ pagination(pag) }}
+  {% else %}<div class="card empty">Belum ada favorit. Buka detail buku lalu tekan “Simpan ke Favorit”.<br><a class="btn" style="margin-top:1rem" href="{{ url_for('main.books') }}">Jelajahi katalog</a></div>{% endif %}
+</div>
+{% endblock %}

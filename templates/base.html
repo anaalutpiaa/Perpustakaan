@@ -1,0 +1,90 @@
+{% from "_macros.html" import csrf %}
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}Perpustakaan Digital{% endblock %} · {{ app_name }}</title>
+  {# Terapkan tema sebelum render agar tidak berkedip #}
+  <script>(function(){try{var t=localStorage.getItem('theme');if(!t){t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}document.documentElement.setAttribute('data-theme',t)}catch(e){}})();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+<header class="navbar">
+  <div class="container nav-inner">
+    <a class="brand" href="{{ url_for('main.index') }}">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#f2b705" stroke-width="2.4" stroke-linecap="round"><path d="M5 4v16M10 4v16M15 6l4 14"/></svg></span>{{ app_name }}
+    </a>
+    <nav class="nav-links" id="nav-links" aria-label="Navigasi utama">
+      <a href="{{ url_for('main.index') }}" class="{{ 'active' if request.endpoint == 'main.index' }}">Beranda</a>
+      <a href="{{ url_for('main.books') }}" class="{{ 'active' if request.endpoint == 'main.books' }}">Katalog</a>
+      <a href="{{ url_for('main.books', type='digital') }}">Buku Gratis</a>
+      <a href="{{ url_for('main.books', type='physical') }}">Pinjam Buku</a>
+      {% if current_user.is_authenticated and current_user.is_admin %}<a href="{{ url_for('admin.dashboard') }}">Panel Admin</a>{% endif %}
+    </nav>
+    <div class="nav-actions">
+      <button class="icon-btn" id="theme-toggle" type="button" aria-label="Ganti tema">🌙</button>
+      {% if current_user.is_authenticated %}
+        {% if overdue_count %}<a class="icon-btn" href="{{ url_for('user.dashboard') }}" title="{{ overdue_count }} buku terlambat dikembalikan" aria-label="{{ overdue_count }} buku terlambat">🔔<span class="badge-dot">{{ overdue_count }}</span></a>{% endif %}
+        <div class="dropdown">
+          <button class="btn btn-outline btn-sm" type="button" data-dropdown aria-haspopup="true">{{ current_user.name.split()[0] }} ▾</button>
+          <div class="dropdown-menu">
+            {% if current_user.is_admin %}<a href="{{ url_for('admin.dashboard') }}">Panel Admin</a>{% else %}
+            <a href="{{ url_for('user.dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('user.favorites') }}">Favorit</a>
+            <a href="{{ url_for('user.history') }}">Riwayat Peminjaman</a>{% endif %}
+            <a href="{{ url_for('user.profile') }}">Profil</a>
+            <hr>
+            <form method="post" action="{{ url_for('auth.logout') }}">{{ csrf() }}<button type="submit">Logout</button></form>
+          </div>
+        </div>
+      {% else %}
+        <a class="btn btn-ghost btn-sm" href="{{ url_for('auth.login') }}">Login</a>
+        {% if site.allow_register == '1' %}<a class="btn btn-sm" href="{{ url_for('auth.register') }}">Register</a>{% endif %}
+      {% endif %}
+      <button class="icon-btn nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Menu">☰</button>
+    </div>
+  </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flashes" role="status">
+  {% for cat, msg in messages %}<div class="flash flash-{{ cat if cat in ['success','danger','warning','info'] else 'info' }}"><span>{{ msg }}</span><button type="button" aria-label="Tutup">×</button></div>{% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>{{ app_name }} — Perpustakaan Digital</h4>
+        <p>{{ site.tagline }} Pinjam buku cetak selama {{ site.loan_days }} hari.</p>
+        <p>{{ site.address }}{% if site.contact_email %} · {{ site.contact_email }}{% endif %}<br>{{ site.open_hours }}</p>
+      </div>
+      <div><h4>Jelajahi</h4><ul>
+        <li><a href="{{ url_for('main.books') }}">Katalog buku</a></li>
+        <li><a href="{{ url_for('main.books', type='digital') }}">Buku gratis/digital</a></li>
+        <li><a href="{{ url_for('main.books', sort='populer') }}">Terpopuler</a></li></ul></div>
+      <div><h4>Akun &amp; Privasi</h4><ul>
+        <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+        {% if site.allow_register == '1' %}<li><a href="{{ url_for('auth.register') }}">Daftar anggota</a></li>{% endif %}
+        <li><button type="button" class="link" data-open-cookie>Pengaturan Cookie</button></li></ul></div>
+    </div>
+    <div class="footer-bottom">© {{ now.year }} {{ app_name }}. Buku digital bersumber dari domain publik dan lisensi terbuka.</div>
+  </div>
+</footer>
+
+{% include "_cookie_banner.html" %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/cookie.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

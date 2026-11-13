@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}403{% endblock %}
+{% block content %}
+<div class="container error-page"><div class="code">403</div><h1 style="font-size:2rem">Akses ditolak</h1><p class="muted">Anda tidak punya izin untuk membuka halaman ini.</p>
+<div class="row" style="justify-content:center"><a class="btn" href="{{ url_for('main.index') }}">Ke beranda</a><a class="btn btn-outline" href="{{ url_for('main.books') }}">Lihat katalog</a></div></div>
+{% endblock %}

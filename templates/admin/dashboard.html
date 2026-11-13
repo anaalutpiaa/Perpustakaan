@@ -1,0 +1,25 @@
+{% extends "admin/base.html" %}
+{% block admin_title %}Dashboard{% endblock %}
+{% block admin_content %}
+<h1 style="font-size:2rem">Dashboard admin</h1>
+<div class="stat-grid">
+  <div class="stat"><span>Total buku</span><b>{{ stats.books }}</b></div>
+  <div class="stat good"><span>Total user</span><b>{{ stats.users }}</b></div>
+  <div class="stat warn"><span>Peminjaman aktif</span><b>{{ stats.active_loans }}</b></div>
+  <div class="stat warn"><span>Menunggu persetujuan</span><b>{{ stats.pending }}</b></div>
+  <div class="stat bad"><span>Terlambat</span><b>{{ stats.overdue }}</b></div>
+  <div class="stat"><span>Ulasan</span><b>{{ stats.reviews }}</b></div>
+</div>
+<div class="chart-grid">
+  <div class="card"><h3>Buku terpopuler (dilihat)</h3>
+    {% for b in popular %}<div class="hbar"><span class="name" title="{{ b.title }}">{{ b.title }}</span><div class="track"><div class="fill" style="width: {{ (b.views / max_views * 100)|round }}%"></div></div><b>{{ b.views }}</b></div>{% endfor %}</div>
+  <div class="card"><h3>Peminjaman 6 bulan terakhir</h3>
+    <div class="vbars">{% for label, n in monthly %}<div class="vbar"><b>{{ n }}</b><div class="fill" style="height: {{ (n / max_month * 80)|round }}%"></div><span class="muted">{{ label }}</span></div>{% endfor %}</div></div>
+  <div class="card"><h3>Buku per kategori</h3>
+    {% for name, n in cat_stats %}<div class="hbar"><span class="name" title="{{ name }}">{{ name }}</span><div class="track"><div class="fill" style="width: {{ (n / max_cat * 100)|round }}%; background: var(--accent)"></div></div><b>{{ n }}</b></div>{% endfor %}</div>
+</div>
+<div class="section-head"><h2 style="font-size:1.4rem">Aktivitas peminjaman terbaru</h2><a href="{{ url_for('admin.loans') }}">Kelola semua</a></div>
+<div class="table-wrap"><table class="table"><thead><tr><th>User</th><th>Buku</th><th>Diajukan</th><th>Status</th></tr></thead><tbody>
+{% for l in recent %}<tr><td>{{ l.user.name }}</td><td>{{ l.book.title }}</td><td>{{ l.requested_at|tgl }}</td><td><span class="badge badge-{{ l.status_class }}">{{ l.status_label }}</span></td></tr>
+{% else %}<tr><td colspan="4" class="empty">Belum ada aktivitas.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{# Banner cookie. Tampil hanya jika server (Flask) tidak menemukan cookie_consent yang valid. #}
+<div id="cookie-banner" class="cookie-banner" role="dialog" aria-label="Persetujuan cookie"
+     data-endpoint="{{ url_for('main.cookie_consent') }}"
+     data-analytics="{{ '1' if consent and consent.analytics else '0' }}"
+     data-marketing="{{ '1' if consent and consent.marketing else '0' }}"
+     {% if consent %}hidden{% endif %}>
+  <div class="txt">
+    <b>Kami memakai cookie</b>
+    Cookie yang diperlukan menjaga login dan keamanan. Cookie analitik membantu kami memperbaiki katalog. Anda bisa mengubah pilihan kapan saja.
+  </div>
+  <div class="btns">
+    <button type="button" class="btn btn-ghost" id="cc-settings">Pengaturan</button>
+    <button type="button" class="btn btn-outline" id="cc-necessary">Hanya yang Diperlukan</button>
+    <button type="button" class="btn" id="cc-accept">Terima Semua</button>
+  </div>
+</div>
+<div id="cookie-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="cc-title">
+  <div class="modal-box">
+    <h3 id="cc-title">Pengaturan cookie</h3>
+    <div class="switch-row"><div><b>Diperlukan</b><small>Sesi login, token keamanan (CSRF), dan pilihan cookie. Selalu aktif.</small></div><input type="checkbox" checked disabled aria-label="Cookie diperlukan"></div>
+    <div class="switch-row"><div><b>Analitik</b><small>Statistik penggunaan anonim untuk memperbaiki layanan.</small></div><input type="checkbox" id="cc-analytics" aria-label="Cookie analitik"></div>
+    <div class="switch-row"><div><b>Pemasaran</b><small>Rekomendasi dan informasi program perpustakaan.</small></div><input type="checkbox" id="cc-marketing" aria-label="Cookie pemasaran"></div>
+    <div class="row" style="margin-top:1.1rem; justify-content:flex-end">
+      <button type="button" class="btn btn-ghost" id="cc-close">Batal</button>
+      <button type="button" class="btn" id="cc-save">Simpan pilihan</button>
+    </div>
+  </div>
+</div>
